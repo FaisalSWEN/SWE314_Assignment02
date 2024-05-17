@@ -68,3 +68,32 @@ const dbinit = async () => {
   }
 };
 
+
+// WebAuth: getUser
+async function getUser(username) {
+    const db = await openDb();
+    const user = await db.get(`SELECT user_webauthen_data FROM users WHERE username = ?`, [username]);
+    await db.close();
+    return user ? JSON.parse(user.user_webauthen_data) : null;
+}
+
+// WebAuth: addUser
+async function addUser(username, user) {
+    const db = await openDb();
+    const existingUser = await getUser(username);
+    if (existingUser) {
+        throw Error('username already exists');
+    }
+    await db.run(`INSERT INTO users (username, user_webauthen_data) VALUES (?, ?)`, [username, JSON.stringify(user)]);
+    await db.close();
+}
+
+// WebAuth: SignUp
+export async function signupAuth(username, user) {
+    await addUser(username, user);
+}
+
+// WebAuth: SignIn
+export async function signinAuth(username) {
+    return await getUser(username);
+}

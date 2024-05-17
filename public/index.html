@@ -13,7 +13,7 @@
             <a href="signup.html" class="download-app">Sign Up</a>
         </header>
         <form action="/login" method="post" class="login-form">
-            <input type="email" id="username" name="username" placeholder="Email" required>
+            <input type="email" id="username" name="username" placeholder="Email" required> <!-- Webauth: username -->
             <input type="password" id="password" name="password" placeholder="Password" required>
             <button type="submit" class="sign-in-button">Sign In</button>
         </form>
@@ -22,9 +22,12 @@
             <span class="or">or</span>
             <hr class="line" />
         </div>
-        <button class="auth-passkeys">
+
+        <button id="loginBtn" class="auth-passkeys">
             <img src="./img/fingerPrint.png" alt="Apple Logo" class="auth-icon">
-            Sign in with passkeys</button>
+            Sign in with passkeys
+        </button>
+
         <div class="auth-options">
             <button class="auth-google" id="loginButton">
                 <img src="./img/google.png" alt="Google Logo" class="auth-icon">
