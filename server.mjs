@@ -69,8 +69,10 @@ app.post('/login', async (req, res) => {
 
 });
 
-app.listen(PORT, () => {
-    console.log('Server is running on http://localhost:' + PORT);
+app.listen(PORT, (err) => {
+  if (err) console.log(err);
+  
+  console.log('Server is running on http://localhost:' + PORT);
 });
 
 
@@ -302,9 +304,33 @@ app.post('/login/finish', async (req, res) => {
 
   // Send the verification result to the client
   const { verified } = verification;
-  if (verified) {
-    return res.send({ verified });
-  } else {
-    return res.status(400).send({ error: 'Unable to verify login' });
-  }
+
+  if (verified)
+    return res.send(true);
+  else 
+    return res.status(400).send(false);
+});
+
+
+app.get('/authDashboard', async (req, res) => {
+  const urlParams = new URLSearchParams(req.originalUrl);
+
+  console.log(urlParams.get('username'));
+  console.log(urlParams.get('registered'));
+  
+  if(urlParams.get('registered') === 'true')
+    return res.send(`
+      <p>User registered successfully</p>
+    `)
+  else if (urlParams.get('registered') === 'false')
+    return res.send(`
+      <p>Error: User registration failed</p>
+    `)
+
+  urlParams.get('username') ? res.send(`
+  <h1>Login successful</h1>
+  <p>Welcome ${urlParams.get('username')}!</p>
+  `): res.status(400).send(`
+  <h1>Login failed</h1>
+  `)
 });

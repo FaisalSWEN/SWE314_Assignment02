@@ -40,9 +40,13 @@ export async function register()
       attestationResponse: attestation,
     }),
   });
-  let verificationResult = await verificationRes.json();
+  let result = await verificationRes.json();
 
-  alert(`Registration ${verificationResult ? 'successful' : 'failed'}`);
+
+  result? 
+  location.assign(`/authDashboard?&registered=true`):
+  location.assign(`/authDashboard?&registered=false`)
+
 }
 
 
@@ -84,7 +88,8 @@ export async function login()
         assertionResponse: assertion,
       }),
     });
-    let verificationResult = await verificationRes.json();
-  
-    alert(`Login ${verificationResult ? 'successful' : 'failed'}`);
+    let result = await verificationRes.json()
+
+    result?  location.assign(`/authDashboard?&username=${username}`):
+    location.assign(`/authDashboard?&username=`)
 }

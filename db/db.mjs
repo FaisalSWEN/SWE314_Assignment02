@@ -94,7 +94,17 @@ async function addUser(username, user) {
   if (existingUser) {
       throw Error('username already exists');
   }
-  await db.run(`INSERT INTO users (username, user_webauthen_data) VALUES (?, ?)`, [username, JSON.stringify(user)]);
+
+  try
+  {
+    await db.run(`INSERT INTO users (username, user_webauthen_data) VALUES (?, ?)`, [username, JSON.stringify(user)]);
+  }
+  
+  catch
+  {
+    await db.run(`UPDATE users SET user_webauthen_data = ? WHERE username = ?`, [JSON.stringify(user), username]);
+  }
+
   await db.close();
 }
 
