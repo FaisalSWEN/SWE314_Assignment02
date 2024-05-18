@@ -3,11 +3,20 @@ import path from 'path';
 import bcrypt from 'bcrypt';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { open } from 'sqlite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const dbPath = path.resolve(__dirname, 'database.db');
+
+// Open the SQLite Database
+async function openDb() {
+  return open({
+      filename: './db/database.db',
+      driver: sqlite3.Database
+  });
+}
 
 export const signin = async ( username, password ) => {
   const db = await dbinit();
@@ -56,7 +65,7 @@ const dbinit = async () => {
     const sql = `CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT NOT NULL UNIQUE,
-      password TEXT NOT NULL,
+      password TEXT,
       user_webauthen_data TEXT
     )`;
     db.run(sql); 
@@ -70,22 +79,23 @@ const dbinit = async () => {
 
 
 // WebAuth: getUser
+// Function to get user by username
 async function getUser(username) {
-    const db = await openDb();
-    const user = await db.get(`SELECT user_webauthen_data FROM users WHERE username = ?`, [username]);
-    await db.close();
-    return user ? JSON.parse(user.user_webauthen_data) : null;
+  const db = await openDb();
+  const user = await db.get(`SELECT user_webauthen_data FROM users WHERE username = ?`, [username]);
+  await db.close();
+  return user ? JSON.parse(user.user_webauthen_data) : null;
 }
 
 // WebAuth: addUser
 async function addUser(username, user) {
-    const db = await openDb();
-    const existingUser = await getUser(username);
-    if (existingUser) {
-        throw Error('username already exists');
-    }
-    await db.run(`INSERT INTO users (username, user_webauthen_data) VALUES (?, ?)`, [username, JSON.stringify(user)]);
-    await db.close();
+  const db = await openDb();
+  const existingUser = await getUser(username);
+  if (existingUser) {
+      throw Error('username already exists');
+  }
+  await db.run(`INSERT INTO users (username, user_webauthen_data) VALUES (?, ?)`, [username, JSON.stringify(user)]);
+  await db.close();
 }
 
 // WebAuth: SignUp
@@ -95,5 +105,5 @@ export async function signupAuth(username, user) {
 
 // WebAuth: SignIn
 export async function signinAuth(username) {
-    return await getUser(username);
+   return await getUser(username);
 }

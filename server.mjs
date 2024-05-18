@@ -3,11 +3,13 @@ import bodyParser from 'body-parser';
 import { hash , compare } from 'bcrypt';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { signup, signin } from './db/db.mjs';
+import { signup, signin, signupAuth, signinAuth } from './db/db.mjs';
 
 // WebAuth ---------------------------------------------------------
 import { generateRegistrationOptions, verifyRegistrationResponse, generateAuthenticationOptions, verifyAuthenticationResponse } from '@simplewebauthn/server';
+import { isoUint8Array } from '@simplewebauthn/server/helpers';
 import base64url from 'base64url';
+
 const authenticators = {};
 const rpID = 'localhost'; // Relying Party Identifier
 const PORT = process.env.PORT || 3000;
@@ -18,15 +20,18 @@ const expectedOrigin = 'http://localhost:' + PORT;
 import querystring from 'querystring';
 import cookieParser from 'cookie-parser';
 import secret from './client_secret.json' assert {type: "json"}; 
-
-const app = express();
-app.use(cookieParser());
-app.use(express.static('public'));
+import { error } from 'console';
 
 const CLIENT_ID = secret.web.client_id;
 const CLIENT_SECRET = secret.web.client_secret;
 const REDIRECT_URI = 'http://localhost:3000/auth/google/callback';
 // -------------------------------------------------------------------
+
+const app = express();
+app.use(cookieParser());
+app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 const { urlencoded } = bodyParser;
 
@@ -164,7 +169,7 @@ app.post('/register/start', async (req, res) => {
   const registrationOptions = await generateRegistrationOptions({
     rpName: 'Future Of Authentication',
     rpID,
-    userID: base64url(Buffer.from(username)),
+    userID: isoUint8Array.fromUTF8String(base64url(Buffer.from(username))),
     userName: username,
     timeout: 60000, // Timeout for the request in milliseconds
     attestationType: 'none',
@@ -258,7 +263,7 @@ app.post('/login/start', async (req, res) => {
     })),
   };
 
-  const authenticationOptions = await generateAuthenticationOptions(options);
+  const authenticationOptions = await generateAuthenticationOptions(options.toString());
 
   // Store the challenge for later use during verification
   authenticators[username] = {

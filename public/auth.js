@@ -3,9 +3,14 @@ import {
   startAuthentication,
 } from 'https://cdn.skypack.dev/@simplewebauthn/browser';
 
+
+const registerBtn = document.getElementById("registerBtn");
+  if(registerBtn != null)
+    registerBtn.addEventListener("click",register)
+
 export async function register() 
 {
-  const username = document.getElementById('usernameAuth').value;
+  const username = document.getElementById('username').value;
 
   // Begin registration process to get options
   let optionsRes = await fetch('/register/start', {
@@ -13,7 +18,7 @@ export async function register()
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({username}),
   });
 
   let options = await optionsRes.json();
@@ -39,13 +44,15 @@ export async function register()
 
   alert(`Registration ${verificationResult ? 'successful' : 'failed'}`);
 }
-document.getElementById('registerBtn').addEventListener('click', register);
 
 
+const loginBtn = document.getElementById('loginBtn')
+if(loginBtn != null)
+  loginBtn.addEventListener('click', login);
 
 export async function login() 
 {
-  const username = document.getElementById('usernameAuth').value;
+  const username = document.getElementById('username').value;
 
   // Begin authentication process to get options
   let optionsRes = await fetch('/login/start', {
@@ -67,19 +74,17 @@ export async function login()
   let assertion = await startAuthentication(options);
 
   // Send assertion response to server
-  let verificationRes = await fetch('/login/finish', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      username,
-      assertionResponse: assertion,
-    }),
-  });
-  let verificationResult = await verificationRes.json();
-
-  alert(`Login ${verificationResult ? 'successful' : 'failed'}`);
+    let verificationRes = await fetch('/login/finish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username,
+        assertionResponse: assertion,
+      }),
+    });
+    let verificationResult = await verificationRes.json();
+  
+    alert(`Login ${verificationResult ? 'successful' : 'failed'}`);
 }
-
-document.getElementById('loginBtn').addEventListener('click', login);
